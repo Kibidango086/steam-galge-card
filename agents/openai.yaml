@@ -1,0 +1,4 @@
+interface:
+  display_name: "Steam Galge Card"
+  short_description: "Polish Steam cards for non-Steam galgames"
+  default_prompt: "Use $steam-galge-card to add a polished Steam library card for a non-Steam galgame."
