@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generate Steam grid artwork for a non-Steam galgame.
 
-Requires Pillow. Outputs standard Steam library slots under a prefix that the
-sync script later renames to the real appid.
+Requires Pillow. Outputs standard Steam library slots (including the legacy
+`_hero.jpg` name) under a prefix that the sync script later renames to the
+real appid.
 
 Example:
     python3 build_artwork.py --cover cover.png --hero ogp.png \
@@ -116,6 +117,7 @@ def main():
     save_jpg(portrait, out_dir / f"{prefix}p.jpg", args.quality)
     save_jpg(capsule, out_dir / f"{prefix}_library_capsule.jpg", args.quality)
     save_jpg(hero_image, out_dir / f"{prefix}_library_hero.jpg", args.quality)
+    save_jpg(hero_image, out_dir / f"{prefix}_hero.jpg", args.quality)
     save_jpg(header, out_dir / f"{prefix}_header.jpg", args.quality)
     header.convert("RGB").save(out_dir / f"{prefix}.png", "PNG")
     header.convert("RGB").save(out_dir / f"{prefix}_grid.png", "PNG")

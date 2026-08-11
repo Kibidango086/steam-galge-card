@@ -8,7 +8,7 @@ Custom images live in `userdata/<steamid>/config/grid/`:
 - Windows: `C:\Program Files (x86)\Steam\userdata\<steamid>\config\grid\`
 - macOS: `~/Library/Application Support/Steam/userdata/<steamid>/config/grid/`
 
-**Do not use `config/steamgrid/`.** Linux Steam does not read it; this is the most common reason a card stays default.
+**Do not use `config/steamgrid/` for library artwork.** Linux Steam does not read it; this is the most common reason a card stays default. The one exception is the shortcut icon: `sync_steam_grid.py` copies the icon into `config/steamgrid/<unsigned-appid>_icon.png` and points the `shortcuts.vdf` `icon` field at that file.
 
 ## File names and sizes
 
@@ -18,13 +18,22 @@ Prefix every file with the appid. Generate both appid variants (signed and unsig
 | --- | --- | --- |
 | Portrait grid | `_library_600x900.jpg` and `p.jpg` | 600x900 |
 | Capsule | `_library_capsule.jpg` | 920x430 |
-| Hero | `_library_hero.jpg` | 3840x1240 (1920x620 acceptable) |
+| Hero (modern) | `_library_hero.jpg` | 3840x1240 (1920x620 acceptable) |
+| Hero (legacy) | `_hero.jpg` | 1920x620 |
 | Header | `_header.jpg` | 460x215 |
 | Logo | `_logo.png` | 1280x720 transparent |
 | Icon | `_icon.png` | 512x512 |
 | Legacy grid | `{appid}.png` / `{appid}_grid.png` | 460x215 |
 
-The portrait (`library_600x900`/`p`) and hero files are what make the modern library card look right; include the others for older views.
+The portrait (`library_600x900`/`p`) and hero files are what make the modern library card look right; include the legacy `_hero.jpg` and the others for older views. `build_artwork.py` generates both hero names automatically.
+
+## Shortcut icon
+
+The library icon is read from the `icon` field in `shortcuts.vdf`, not from the grid folder. A plain `grid/<appid>_icon.png` can be ignored by some Steam clients, which is why the shortcut keeps showing the default exe icon.
+
+- `sync_steam_grid.py --shortcuts-vdf ...` copies the icon to `config/steamgrid/<unsigned-appid>_icon.png` and updates the matching shortcut's `icon` field.
+- Steam must be completely closed before that VDF update; the script writes a `.steam-galge-card.bak` backup first.
+- The `icon` path must point at a file that exists after Steam restarts. Keep the `config/steamgrid/` copy in place.
 
 ## Signed vs unsigned appid
 
@@ -49,6 +58,7 @@ Copy every artwork file to both prefixes. The sync script does this automaticall
 ## Troubleshooting
 
 - **Card still default after restart**: confirm files are in `config/grid/` (not `config/steamgrid/`), file names use the exact appid, and both signed/unsigned variants exist.
+- **Icon still default after restart**: check the `icon` field for that appid in `shortcuts.vdf`, confirm the referenced file exists under `config/steamgrid/`, and re-run `sync_steam_grid.py --shortcuts-vdf ...` before restarting Steam.
 - **Wrong account / wrong userdata**: the game's shortcut is in only one `userdata/<steamid>/config/shortcuts.vdf`; install grid files into that same `<steamid>/config/grid/`.
 - **Title still default or placeholder**: the library title comes from `AppName` in `shortcuts.vdf`; rename the shortcut in Steam UI (Steam must be running), then re-read the appid and restart Steam. The appid does not change when renaming.
 - **Cache miss still in log**: the names or directory are wrong; re-run the sync script and restart Steam again.

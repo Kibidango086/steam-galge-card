@@ -7,7 +7,7 @@ description: Create, fix, or replace the Steam library card of a non-Steam galga
 
 ## Overview
 
-Give a non-Steam galgame a native-looking Steam library card: Japanese title, artwork in Steam grid sizes, and an icon from the game exe. The card is applied locally by writing images into Steam's `userdata/<steamid>/config/grid/` folder, then restarting Steam.
+Give a non-Steam galgame a native-looking Steam library card: Japanese title, artwork in Steam grid sizes, and an icon from the game exe. The card is applied locally by writing images into Steam's `userdata/<steamid>/config/grid/` folder, pointing the shortcut's `shortcuts.vdf` `icon` field at the icon, then restarting Steam.
 
 ## User preferences (defaults)
 
@@ -68,31 +68,40 @@ python3 scripts/build_artwork.py \
   --out-dir work/steam_card/<game-slug>/out
 ```
 
-Outputs standard Steam sizes: 600x900 portrait, 920x430 capsule, 460x215 header, 1920x620 hero (official 3840x1240 is available via `--hero-size`), 1280x720 logo, and 512x512 icon. Omit `--hero`/`--logo`/`--icon` when the source is unavailable; the script skips those files.
+Outputs standard Steam sizes: 600x900 portrait, 920x430 capsule, 460x215 header, 1920x620 hero (official 3840x1240 is available via `--hero-size`), the legacy `{prefix}_hero.jpg` hero, 1280x720 logo, and 512x512 icon. Omit `--hero`/`--logo`/`--icon` when the source is unavailable; the script skips those files.
 
 ### 4. Install grid files
+
+Close Steam completely before touching `shortcuts.vdf`, then wait for the process to fully exit:
+
+```bash
+steam -shutdown
+pgrep -a steam   # repeat until no steam process remains
+```
+
+Run the sync script with `--shortcuts-vdf` so it installs every artwork file under both signed and unsigned appid names, copies the icon into `config/steamgrid/`, and points the shortcut's `icon` field at it:
 
 ```bash
 python3 scripts/sync_steam_grid.py \
   --source-dir work/steam_card/<game-slug>/out \
   --prefix lllj \
   --grid-dir ~/.local/share/Steam/userdata/<steamid>/config/grid \
-  --appid -1160374858
+  --shortcuts-vdf ~/.local/share/Steam/userdata/<steamid>/config/shortcuts.vdf \
+  --name "ライムライト・レモネードジャム"
 ```
 
-The script copies every generated file to both the signed and unsigned appid filenames. It can also read the appid from `shortcuts.vdf` by game name: see `--help`.
+The script copies every generated file (including `_library_hero.jpg` and the legacy `_hero.jpg`) to both the signed and unsigned appid filenames. When it updates `shortcuts.vdf`, it first writes a `.steam-galge-card.bak` backup and then atomically replaces the file. It can also take `--appid` directly instead of `--name`: see `--help`.
 
 ### 5. Restart Steam and verify
 
-1. Close Steam completely, then relaunch it.
-   - Linux: run `steam -shutdown`, wait for the process to exit, then run `steam` again.
+1. Relaunch Steam (`steam` on Linux) after the sync script finishes.
 2. Open the library so the shortcut's grid cache is refreshed.
 3. Check `logs/steamui_librarycache.txt` (Linux: `~/.local/share/Steam/logs/steamui_librarycache.txt`) for the appid. A successful install shows no new `cache miss` line for that appid and ends with `Checked N, remaining 0`. Take a library screenshot when the user wants visual proof.
-4. If the card is still default, see troubleshooting in `references/steam-grid.md`.
+4. If the card or icon is still default, see troubleshooting in `references/steam-grid.md`.
 
 ## Replacing or updating a card
 
-Run steps 3-5 again with the same appid and the same prefix. The sync script overwrites the existing files with the same names, so no stale files remain. Changing only the icon or title still requires the full grid sync so all appid variants stay in sync. If the prefix changes, delete the old `{appid}_*.jpg`/`{appid}_*.png` files from the grid folder before syncing.
+Run steps 3-5 again with the same appid and the same prefix. The sync script overwrites the existing files with the same names, so no stale files remain, and re-running with `--shortcuts-vdf` refreshes the `icon` field. Changing only the icon or title still requires the full grid sync so all appid variants stay in sync. If the prefix changes, delete the old `{appid}_*.jpg`/`{appid}_*.png` files from the grid folder before syncing.
 
 ## Requirements
 
