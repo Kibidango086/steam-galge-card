@@ -20,6 +20,18 @@ Ask the user only when a preference changes or sources genuinely conflict.
 
 ## Workflow
 
+### 0. Create a work directory
+
+Create `work/steam_card/<game-slug>/` in the current workspace (fall back to `/tmp/steam_card_<game-slug>/` when there is no workspace). Keep this layout:
+
+```text
+work/steam_card/<game-slug>/
+  sources/   downloaded covers, heroes, logos, extracted icon PNGs
+  out/       generated artwork from build_artwork.py
+```
+
+Save every downloaded image and extracted icon under `sources/`. Never write source files directly into Steam's `config/grid/`; only `sync_steam_grid.py` writes there.
+
 ### 1. Find the appid
 
 The game must already be added as a non-Steam shortcut (add it in Steam UI; do not hand-edit `shortcuts.vdf` while Steam is running).
@@ -47,12 +59,12 @@ Collect at minimum:
 
 ```bash
 python3 scripts/build_artwork.py \
-  --cover cover.png \
-  --hero ogp.png \
-  --logo logo.png \
-  --icon icon.png \
+  --cover work/steam_card/<game-slug>/sources/cover.png \
+  --hero work/steam_card/<game-slug>/sources/hero.png \
+  --logo work/steam_card/<game-slug>/sources/logo.png \
+  --icon work/steam_card/<game-slug>/sources/icon.png \
   --prefix lllj \
-  --out-dir out
+  --out-dir work/steam_card/<game-slug>/out
 ```
 
 Outputs standard Steam sizes: 600x900 portrait, 920x430 capsule, 460x215 header, 1920x620 hero (official 3840x1240 is available via `--hero-size`), 1280x720 logo, and 512x512 icon. Omit `--hero`/`--logo`/`--icon` when the source is unavailable; the script skips those files.
@@ -61,7 +73,7 @@ Outputs standard Steam sizes: 600x900 portrait, 920x430 capsule, 460x215 header,
 
 ```bash
 python3 scripts/sync_steam_grid.py \
-  --source-dir out \
+  --source-dir work/steam_card/<game-slug>/out \
   --prefix lllj \
   --grid-dir ~/.local/share/Steam/userdata/<steamid>/config/grid \
   --appid -1160374858

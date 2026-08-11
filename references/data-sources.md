@@ -42,4 +42,5 @@ icotool -x icon.ico -o icon_extracted/
 ## Downloading images
 
 - Use `curl -L -A "Mozilla/5.0" -o out.png <url>` for site images.
+- Save every download under `work/steam_card/<game-slug>/sources/` (see SKILL.md step 0 for the full layout).
 - Verify every downloaded image with Pillow (`Image.open`) before generating artwork; delete unusable files (too small, corrupted, non-image HTML).
