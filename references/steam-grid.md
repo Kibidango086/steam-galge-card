@@ -49,6 +49,8 @@ Copy every artwork file to both prefixes. The sync script does this automaticall
 ## Troubleshooting
 
 - **Card still default after restart**: confirm files are in `config/grid/` (not `config/steamgrid/`), file names use the exact appid, and both signed/unsigned variants exist.
+- **Wrong account / wrong userdata**: the game's shortcut is in only one `userdata/<steamid>/config/shortcuts.vdf`; install grid files into that same `<steamid>/config/grid/`.
+- **Title still default or placeholder**: the library title comes from `AppName` in `shortcuts.vdf`; rename the shortcut in Steam UI (Steam must be running), then re-read the appid and restart Steam. The appid does not change when renaming.
 - **Cache miss still in log**: the names or directory are wrong; re-run the sync script and restart Steam again.
 - **Blurry/incorrect crop**: use the highest-resolution cover available; pass `--hero-size 3840x1240` when the source is large enough.
 - **shortcuts.vdf**: read it with the `vdf` module; never hand-edit it while Steam is running. Use the Steam UI to add/remove/rename shortcuts, then re-read the appid.

@@ -34,14 +34,15 @@ Save every downloaded image and extracted icon under `sources/`. Never write sou
 
 ### 1. Find the appid
 
-The game must already be added as a non-Steam shortcut (add it in Steam UI; do not hand-edit `shortcuts.vdf` while Steam is running).
+The game must already be added as a non-Steam shortcut. If it is not, ask the user to add it in Steam UI (`Library > Add a Game > Add a Non-Steam Game`). If the shortcut still shows a default or wrong name, ask the user to rename it in Steam UI to the Japanese title before continuing. Do not hand-edit `shortcuts.vdf` while Steam is running.
 
 1. Locate `userdata`:
    - Linux: `~/.local/share/Steam/userdata/<steamid>/`
    - Windows: `C:\Program Files (x86)\Steam\userdata\<steamid>\`
    - macOS: `~/Library/Application Support/Steam/userdata/<steamid>/`
-2. Read `config/shortcuts.vdf` with Python `vdf` (`vdf.binary_loads`) and match `AppName` to the game name.
-3. Note the stored `appid` (signed int32, often negative) and always use both it and its unsigned counterpart (`signed + 2**32`) for grid files. Details: `references/steam-grid.md`.
+   If multiple `userdata/*` folders exist, read each `config/shortcuts.vdf` and pick the one whose `AppName` matches the game.
+2. Read `config/shortcuts.vdf` with Python `vdf` (`vdf.binary_loads`) and match `AppName` to the game name. Also note `Exe`; it is the game executable used for icon extraction.
+3. Note the stored `appid` (signed int32, often negative) and always use both it and its unsigned counterpart (`signed + 2**32`) for grid files. Renaming the shortcut later in Steam UI only changes `AppName`, not the appid. Details: `references/steam-grid.md`.
 
 ### 2. Gather metadata and artwork
 
@@ -53,7 +54,7 @@ Collect at minimum:
 - Portrait cover (600x900 target; VNDB/Kungal covers work)
 - Optional wide hero source (OGP image, key visual, or screenshot)
 - Optional transparent logo PNG
-- Icon PNG from the game exe
+- Icon PNG from the game exe (use the `Exe` path found in step 1)
 
 ### 3. Generate artwork
 
@@ -84,13 +85,14 @@ The script copies every generated file to both the signed and unsigned appid fil
 ### 5. Restart Steam and verify
 
 1. Close Steam completely, then relaunch it.
+   - Linux: run `steam -shutdown`, wait for the process to exit, then run `steam` again.
 2. Open the library so the shortcut's grid cache is refreshed.
-3. Check `logs/steamui_librarycache.txt` (next to the Steam install) for the appid. A successful install shows no new `cache miss` line for that appid and ends with `Checked N, remaining 0`. Take a library screenshot when the user wants visual proof.
+3. Check `logs/steamui_librarycache.txt` (Linux: `~/.local/share/Steam/logs/steamui_librarycache.txt`) for the appid. A successful install shows no new `cache miss` line for that appid and ends with `Checked N, remaining 0`. Take a library screenshot when the user wants visual proof.
 4. If the card is still default, see troubleshooting in `references/steam-grid.md`.
 
 ## Replacing or updating a card
 
-Run steps 3-5 again with the same appid. The sync script overwrites the existing files with the same names, so no stale files remain. Changing only the icon or title still requires the full grid sync so all appid variants stay in sync.
+Run steps 3-5 again with the same appid and the same prefix. The sync script overwrites the existing files with the same names, so no stale files remain. Changing only the icon or title still requires the full grid sync so all appid variants stay in sync. If the prefix changes, delete the old `{appid}_*.jpg`/`{appid}_*.png` files from the grid folder before syncing.
 
 ## Requirements
 
